@@ -18,7 +18,7 @@ function getStatusValue(status: string): number {
 }
 
 export function calculateScore(results: (CheckResult & { id: string })[]) {
-  const categories: Record<string, { score: number; results: (CheckResult & { id: string })[] }> = {};
+  const categories: Record<string, { score: number; results: (CheckResult & { id: string; why: string; effort: "low" | "medium" | "high"; weight: number })[] }> = {};
   
   // Group results by category
   for (const res of results) {
@@ -29,7 +29,12 @@ export function calculateScore(results: (CheckResult & { id: string })[]) {
     if (!categories[cat]) {
       categories[cat] = { score: 0, results: [] };
     }
-    categories[cat].results.push(res);
+    categories[cat].results.push({
+      ...res,
+      why: checkDef.why,
+      effort: checkDef.effort,
+      weight: checkDef.weight,
+    });
   }
 
   let totalWeightedScore = 0;
@@ -42,11 +47,10 @@ export function calculateScore(results: (CheckResult & { id: string })[]) {
     let catPossible = 0;
 
     for (const res of catData.results) {
-      const checkDef = checks.find((c) => c.id === res.id);
       const val = getStatusValue(res.status);
-      if (val >= 0 && checkDef) {
-        catAchieved += val * checkDef.weight;
-        catPossible += checkDef.weight;
+      if (val >= 0) {
+        catAchieved += val * res.weight;
+        catPossible += res.weight;
       }
     }
 
@@ -78,11 +82,17 @@ export function calculateScore(results: (CheckResult & { id: string })[]) {
       const def = checks.find((c) => c.id === r.id);
       const val = getStatusValue(r.status);
       const impact = def ? def.weight * (1 - val) : 0;
-      return { ...r, impact };
+      return { r, def, impact };
     })
     .sort((a, b) => b.impact - a.impact)
     .slice(0, 5)
-    .map((r) => ({ id: r.id, message: r.message, fix: r.fix || "" }));
+    .map(({ r, def, impact }) => ({ 
+      id: r.id, 
+      message: r.message, 
+      fix: r.fix || "", 
+      impact, 
+      effort: def?.effort || "medium" 
+    }));
 
   return {
     score: overallScore,

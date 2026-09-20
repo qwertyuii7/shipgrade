@@ -1,7 +1,8 @@
 export const META = {
   name: "shipgrade",
-  version: "0.1.2",
+  version: "0.1.3",
+  schemaVersion: "1.1",
   bin: "shipgrade",
-  repo: "https://github.com/example/shipgrade", // Replace with real repo later
-  userAgent: "shipgrade/0.1.0 (+https://github.com/example/shipgrade)",
+  repo: "https://github.com/qwertyuii7/shipgrade",
+  userAgent: "shipgrade/0.1.3 (+https://github.com/qwertyuii7/shipgrade)",
 };

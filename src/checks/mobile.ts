@@ -7,6 +7,7 @@ export const mobileChecks: Check[] = [
     title: "Viewport meta tag",
     weight: 5,
     effort: "low",
+    why: "Without a proper viewport tag, mobile devices will render your site as a zoomed-out desktop page, ruining the mobile user experience and hurting SEO.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const viewport = ctx.$('meta[name="viewport"]').attr("content");
       if (!viewport) {

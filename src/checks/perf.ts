@@ -7,6 +7,7 @@ export const perfChecks: Check[] = [
     title: "Response compressed (br / gzip)",
     weight: 4,
     effort: "low",
+    why: "Compression drastically reduces the file size of your HTML, CSS, and JS, meaning your site loads significantly faster for users on slow networks.",
     async run(ctx: Context) {
       const encoding = ctx.headers.get("content-encoding");
       if (encoding && (encoding.includes("br") || encoding.includes("gzip"))) {
@@ -21,6 +22,7 @@ export const perfChecks: Check[] = [
     title: "Server response time (TTFB)",
     weight: 3,
     effort: "medium",
+    why: "Time to First Byte measures your server's responsiveness. High TTFB means users stare at a blank screen longer before the page even begins to load.",
     async run(ctx: Context) {
       const { ttfb } = ctx.timing;
       if (ttfb < 300) {
@@ -37,6 +39,7 @@ export const perfChecks: Check[] = [
     title: "Cache-Control header",
     weight: 2,
     effort: "low",
+    why: "Static assets without Cache-Control headers force repeat visitors to re-download unchanged files, wasting bandwidth and slowing down navigation.",
     async run(ctx: Context) {
       const cache = ctx.headers.get("cache-control");
       if (cache && !cache.includes("no-cache")) {
@@ -51,6 +54,7 @@ export const perfChecks: Check[] = [
     title: "HTML Document Size",
     weight: 3,
     effort: "low",
+    why: "A massive HTML document is slow to download and expensive for browsers to parse, often indicating bloated server-side rendering or excessive inline CSS/JS.",
     async run(ctx: Context) {
       const sizeBytes = Buffer.byteLength(ctx.html, "utf8");
       const sizeKb = Math.round(sizeBytes / 1024);
@@ -68,6 +72,7 @@ export const perfChecks: Check[] = [
     title: "Lazy-loaded images",
     weight: 2,
     effort: "low",
+    why: "Images below the fold without loading=\"lazy\" are downloaded immediately, stealing bandwidth from critical assets that the user actually sees right now.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const images = ctx.$("img");
       let missing = 0;
@@ -88,6 +93,7 @@ export const perfChecks: Check[] = [
     title: "Render-blocking scripts",
     weight: 4,
     effort: "medium",
+    why: "Synchronous scripts in the <head> block the browser from rendering the page until they finish downloading and executing, causing a white-screen delay.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const scripts = ctx.$("head script[src]");
       let blocking = 0;
@@ -109,6 +115,7 @@ export const perfChecks: Check[] = [
     title: "No broken images (Sample of 10)",
     weight: 3,
     effort: "low",
+    why: "Broken images result in ugly missing-image icons, immediately breaking trust and making your site look unmaintained or broken.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const images = new Set<string>();
       ctx.$('img[src]').each((_, el) => {

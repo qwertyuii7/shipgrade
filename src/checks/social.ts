@@ -7,6 +7,7 @@ export const socialChecks: Check[] = [
     title: "Open Graph title",
     weight: 3,
     effort: "low",
+    why: "Open Graph titles dictate what your link looks like when shared on social platforms like iMessage, Slack, Facebook, and LinkedIn.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const ogTitle = ctx.$('meta[property="og:title"]').attr("content");
       if (!ogTitle) {
@@ -21,6 +22,7 @@ export const socialChecks: Check[] = [
     title: "Open Graph image is present",
     weight: 4,
     effort: "low",
+    why: "Without a valid, absolute Open Graph image URL, your shared links will just be plain text instead of a rich, clickable preview card.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const ogImage = ctx.$('meta[property="og:image"]').attr("content");
       if (!ogImage) {
@@ -38,6 +40,7 @@ export const socialChecks: Check[] = [
     title: "Twitter Card metadata",
     weight: 3,
     effort: "low",
+    why: "Twitter requires specific metadata tags to generate large preview cards. Without them, your tweets will just look like standard text links.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const twitterCard = ctx.$('meta[name="twitter:card"]').attr("content");
       if (!twitterCard) {
@@ -56,6 +59,7 @@ export const socialChecks: Check[] = [
     title: "Favicon is reachable",
     weight: 2,
     effort: "low",
+    why: "Favicons establish your brand identity in browser tabs and bookmarks. A missing favicon makes your site look unfinished and generic.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       // Find favicon href in html
       let faviconUrl = ctx.$('link[rel~="icon"]').attr("href");
@@ -84,6 +88,7 @@ export const socialChecks: Check[] = [
     title: "Open Graph image is reachable",
     weight: 4,
     effort: "low",
+    why: "If your Open Graph image returns a 404, social platforms will fail to scrape it, resulting in a broken, empty preview card when your link is shared.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       const ogImage = ctx.$('meta[property="og:image"]').attr("content");
       if (!ogImage || !/^https?:\/\//i.test(ogImage)) {

@@ -8,6 +8,7 @@ export const securityChecks: Check[] = [
     title: "HTTPS is active",
     weight: 5,
     effort: "low",
+    why: "HTTP traffic is unencrypted, exposing your users to man-in-the-middle attacks and causing browsers to mark your site as 'Not Secure'.",
     async run(ctx: Context) {
       if (ctx.finalUrl.startsWith("https://")) {
         return { status: "pass", message: "Site uses HTTPS" };
@@ -21,6 +22,7 @@ export const securityChecks: Check[] = [
     title: "Strict-Transport-Security header",
     weight: 3,
     effort: "low",
+    why: "HSTS forces browsers to always use HTTPS for your domain, protecting against downgrade attacks and cookie hijacking.",
     async run(ctx: Context) {
       const hsts = ctx.headers.get("strict-transport-security");
       if (hsts) {
@@ -35,6 +37,7 @@ export const securityChecks: Check[] = [
     title: "X-Content-Type-Options: nosniff",
     weight: 2,
     effort: "low",
+    why: "Without nosniff, browsers might try to execute non-executable files (like images) as code, opening the door to cross-site scripting (XSS) attacks.",
     async run(ctx: Context) {
       const xcto = ctx.headers.get("x-content-type-options");
       if (xcto && xcto.toLowerCase() === "nosniff") {
@@ -49,6 +52,7 @@ export const securityChecks: Check[] = [
     title: "Content-Security-Policy header",
     weight: 3,
     effort: "high",
+    why: "A Content Security Policy is your strongest defense against XSS and data injection attacks by restricting where scripts and assets can load from.",
     async run(ctx: Context) {
       const csp = ctx.headers.get("content-security-policy");
       if (csp) {
@@ -63,6 +67,7 @@ export const securityChecks: Check[] = [
     title: "X-Frame-Options header",
     weight: 2,
     effort: "low",
+    why: "Without frame protection, malicious sites can embed your site in an invisible iframe to trick users into clicking buttons they didn't intend to (Clickjacking).",
     async run(ctx: Context) {
       const frame = ctx.headers.get("x-frame-options");
       const csp = ctx.headers.get("content-security-policy");
@@ -78,6 +83,7 @@ export const securityChecks: Check[] = [
     title: "Referrer-Policy header",
     weight: 1,
     effort: "low",
+    why: "A loose Referrer-Policy can leak sensitive URLs and user data to third-party domains when users click external links.",
     async run(ctx: Context) {
       const policy = ctx.headers.get("referrer-policy");
       if (policy) {
@@ -92,6 +98,7 @@ export const securityChecks: Check[] = [
     title: "X-Powered-By is hidden",
     weight: 2,
     effort: "low",
+    why: "Exposing exactly what server, language, or framework you use makes it significantly easier for automated scanners to target known vulnerabilities in your stack.",
     async run(ctx: Context) {
       const powered = ctx.headers.get("x-powered-by");
       const server = ctx.headers.get("server");
@@ -112,6 +119,7 @@ export const securityChecks: Check[] = [
     title: "Mixed Content (HTTP on HTTPS)",
     weight: 4,
     effort: "medium",
+    why: "Loading insecure HTTP assets (like images or scripts) on a secure HTTPS page breaks the security guarantee, and modern browsers will block the active content entirely.",
     async run(ctx: Context & { $: cheerio.CheerioAPI }) {
       if (!ctx.finalUrl.startsWith("https://")) return { status: "info", message: "Skipped (Site not using HTTPS)" };
       
@@ -133,6 +141,7 @@ export const securityChecks: Check[] = [
     title: "TLS Certificate is valid",
     weight: 5,
     effort: "low",
+    why: "An expired or invalid SSL certificate will cause browsers to completely block users from visiting your site with a massive, terrifying security warning.",
     async run(ctx: Context) {
       if (!ctx.finalUrl.startsWith("https://")) return { status: "info", message: "Skipped (Site not using HTTPS)" };
       

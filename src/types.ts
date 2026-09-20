@@ -26,6 +26,7 @@ export interface Check {
   title: string;
   weight: 1 | 2 | 3 | 4 | 5;
   effort: "low" | "medium" | "high";
+  why: string;
   run(ctx: Context): Promise<CheckResult>;
 }
 
@@ -33,13 +34,13 @@ export interface Report {
   url: string;
   finalUrl: string;
   scannedAt: string;
-  tool: { name: string; version: string };
+  tool: { name: string; version: string; schemaVersion: string };
   score: number;
   grade: string;
   categories: Record<
     string,
-    { score: number; results: (CheckResult & { id: string })[] }
+    { score: number; results: (CheckResult & { id: string; why: string; effort: "low" | "medium" | "high"; weight: number })[] }
   >;
-  topFixes: { id: string; message: string; fix: string }[];
+  topFixes: { id: string; message: string; fix: string; impact: number; effort: "low" | "medium" | "high" }[];
   framework?: "next" | "nuxt" | "astro" | "wordpress" | "unknown";
 }

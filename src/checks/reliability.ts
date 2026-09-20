@@ -7,6 +7,7 @@ export const reliabilityChecks: Check[] = [
     title: "www / non-www consistency",
     weight: 2,
     effort: "low",
+    why: "Serving your site on both www and non-www without a redirect splits your search engine ranking power (SEO equity) and creates duplicate content issues.",
     async run(ctx: Context) {
       try {
         const urlObj = new URL(ctx.finalUrl);

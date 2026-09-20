@@ -7,6 +7,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 5,
     effort: "low",
+    why: "If your main page doesn't return a 200 OK status, search engines will assume the page is broken and refuse to index it.",
     run: async (ctx: Context): Promise<CheckResult> => {
       if (ctx.status === 200) {
         return { status: "pass", message: "Status 200 OK" };
@@ -24,6 +25,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "low",
+    why: "The title tag is the most critical on-page SEO factor. It's the large blue link in search results and directly impacts click-through rates.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const title = ctx.$("title").text().trim();
       if (!title) {
@@ -49,6 +51,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "low",
+    why: "The meta description acts as your organic ad copy in search results. A missing or poorly-sized description means search engines will auto-generate one, hurting your click-through rate.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const desc = ctx.$('meta[name="description"]').attr("content");
       if (!desc) {
@@ -74,6 +77,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 3,
     effort: "low",
+    why: "Search engines use the H1 tag to understand the primary topic of the page. Multiple H1s or a missing H1 dilutes that signal.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const h1Count = ctx.$("h1").length;
       if (h1Count === 0) {
@@ -99,6 +103,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "low",
+    why: "Canonical tags tell search engines which version of a URL is the 'master' copy, preventing duplicate content penalties if your site is accessible via multiple parameters.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const canonical = ctx.$('link[rel="canonical"]').attr("href");
       if (!canonical) {
@@ -117,6 +122,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 2,
     effort: "low",
+    why: "Without a lang attribute, screen readers cannot properly pronounce the text, and search engines struggle to geographically target your content.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const lang = ctx.$("html").attr("lang");
       if (!lang) {
@@ -135,6 +141,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "medium",
+    why: "Alt text is essential for visually impaired users relying on screen readers, and it helps search engines understand the context of your images for Image Search.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const images = ctx.$("img");
       let missing = 0;
@@ -157,6 +164,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 2,
     effort: "medium",
+    why: "Structured data (JSON-LD) allows search engines to display rich snippets (like star ratings, recipes, or product prices) directly in the search results.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const ld = ctx.$('script[type="application/ld+json"]');
       if (ld.length === 0) {
@@ -175,6 +183,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 3,
     effort: "low",
+    why: "A robots.txt file provides explicit crawling rules for search engine bots, ensuring they don't waste crawl budget on admin pages or private routes.",
     run: async (ctx: Context): Promise<CheckResult> => {
       try {
         const url = new URL("/robots.txt", ctx.finalUrl).href;
@@ -194,6 +203,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 3,
     effort: "low",
+    why: "An XML sitemap acts as a roadmap for search engines, helping them discover and index all your important pages quickly.",
     run: async (ctx: Context): Promise<CheckResult> => {
       try {
         const url = new URL("/sitemap.xml", ctx.finalUrl).href;
@@ -213,6 +223,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "medium",
+    why: "Soft 404s (returning a 200 OK for a page that doesn't exist) confuse search engines, wasting your crawl budget and getting garbage URLs indexed.",
     run: async (ctx: Context): Promise<CheckResult> => {
       try {
         const randomPath = `/does-not-exist-${Math.random().toString(36).substring(7)}`;
@@ -233,6 +244,7 @@ export const seoChecks: Check[] = [
     category: "seo",
     weight: 4,
     effort: "low",
+    why: "Broken outbound or internal links create dead ends for users and search engine crawlers, severely damaging your SEO rankings and user experience.",
     run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
       const internalLinks = new Set<string>();
       const externalLinks = new Set<string>();
