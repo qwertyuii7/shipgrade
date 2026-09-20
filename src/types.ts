@@ -10,6 +10,7 @@ export interface Context {
     ttfb: number;
     total: number;
   };
+  isSPA?: boolean;
 }
 
 export interface CheckResult {

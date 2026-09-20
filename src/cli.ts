@@ -43,20 +43,53 @@ cli
   .option("--fix", "Generate FIXES.md prompt for AI agents")
   .option("--open", "Automatically open the generated HTML/PDF/Card")
   .option("--quiet", "Suppress visual output (banner, etc)")
+  .option("--force", "Force run checks even if blocked or status is non-2xx")
   .action(async (url: string | undefined, options) => {
     if (!url) {
       cli.outputHelp();
-      process.exit(1);
+      process.exit(2);
     }
 
-    if (shouldShowBanner({ json: options.json, quiet: options.quiet })) {
-      await playBanner({ version: META.version, url, checks: checks.length, categories: 6, roast: !!options.roast });
+    if (!options.json && shouldShowBanner({ json: options.json, quiet: options.quiet })) {
+      // Banner needs checks.length, let's just pass a default 36 since we added a check
+      await playBanner({ version: META.version, url, checks: 36, categories: 6, roast: !!options.roast });
     }
 
     try {
       const ctx = await fetchContext(url);
+
+      // Block Detection
+      if (!options.force) {
+        let blockReason = "";
+        
+        const isJustAMoment = ctx.html.includes("Just a moment");
+        const titleText = ctx.$("title").text();
+        const cfMitigated = ctx.headers.get("cf-mitigated");
+        
+        if ((ctx.status === 403 || ctx.status === 429 || ctx.status === 503 || titleText.includes("Just a moment")) && (isJustAMoment || cfMitigated)) {
+          blockReason = `blocked (cloudflare challenge)`;
+        } else if (ctx.status === 401) blockReason = "needs auth (401)";
+        else if (ctx.status === 403 || ctx.status === 429) blockReason = `blocked (${ctx.status})`;
+        else if (ctx.status === 404) blockReason = "not found (404)";
+        else if (ctx.status >= 500) blockReason = `server error (${ctx.status})`;
+        else if (ctx.status < 200 || ctx.status >= 300) blockReason = `unexpected status (${ctx.status})`;
+
+        if (blockReason) {
+          if (options.json) {
+            console.log(JSON.stringify({ error: blockReason, status: ctx.status }));
+          } else {
+            console.error(`\n❌ Error: ${blockReason}. Use --force to score anyway.`);
+          }
+          process.exit(2);
+        }
+      }
+
+      if (!options.json && ctx.isSPA) {
+        console.error(`\n⚠️  Warning: Client-rendered SPA detected. Some DOM-dependent checks have been skipped because results would be unreliable.\n`);
+      }
+
       const results = await runChecks(ctx);
-      const scoreData = calculateScore(results);
+      const scoreData = calculateScore(results, ctx.status);
 
       const report = {
         url: ctx.url,
@@ -79,11 +112,6 @@ cli
       }
       if (options.pdf) {
         const pdfFile = typeof options.pdf === 'string' ? options.pdf : `shipgrade-report.pdf`;
-        
-        // We need to generate the HTML string to feed to the PDF generator.
-        // Let's refactor generateHtmlReport to return the HTML string or just recreate it.
-        // Actually, generating a temporary HTML file or returning string is better.
-        // For now, let's write to a temp file and read it back if we must, or we can just refactor html.ts quickly.
         const { generateHtmlString } = await import("./report/html.js");
         const htmlStr = generateHtmlString(report);
         await generatePdfReport(htmlStr, pdfFile, options.browser);
@@ -109,12 +137,19 @@ cli
         process.exit(1);
       }
     } catch (err: any) {
-      console.error(`❌ Error: ${err.message}`);
-      process.exit(1);
+      const code = err.cause?.code || err.cause?.cause?.code || "";
+      const msg = code ? `${err.message} (${code})` : err.message;
+      if (options.json) {
+        console.log(JSON.stringify({ error: msg, status: 0 }));
+      } else {
+        console.error(`\n❌ Error: ${msg}`);
+      }
+      process.exit(2);
     }
   });
 
 cli.help();
-cli.version("1.0.0");
+// Import package.json dynamically or use META.version. We already have META.version.
+cli.version(META.version);
 
 cli.parse();

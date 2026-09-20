@@ -17,7 +17,7 @@ function getStatusValue(status: string): number {
   return -1; // skip / info
 }
 
-export function calculateScore(results: (CheckResult & { id: string })[]) {
+export function calculateScore(results: (CheckResult & { id: string })[], httpStatus: number = 200) {
   const categories: Record<string, { score: number; results: (CheckResult & { id: string; why: string; effort: "low" | "medium" | "high"; weight: number })[] }> = {};
   
   // Group results by category
@@ -65,6 +65,11 @@ export function calculateScore(results: (CheckResult & { id: string })[]) {
   let overallScore = 0;
   if (totalPossibleWeight > 0) {
     overallScore = Math.round((totalWeightedScore / totalPossibleWeight) * 100);
+  }
+
+  const noindexResult = results.find(r => r.id === "seo.noindex");
+  if ((noindexResult && noindexResult.status === "fail") || httpStatus >= 400) {
+    if (overallScore > 40) overallScore = 40;
   }
 
   // Determine grade

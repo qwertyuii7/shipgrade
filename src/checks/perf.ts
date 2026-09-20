@@ -40,12 +40,32 @@ export const perfChecks: Check[] = [
     weight: 2,
     effort: "low",
     why: "Static assets without Cache-Control headers force repeat visitors to re-download unchanged files, wasting bandwidth and slowing down navigation.",
-    async run(ctx: Context) {
-      const cache = ctx.headers.get("cache-control");
-      if (cache && !cache.includes("no-cache")) {
-        return { status: "pass", message: "Cache-Control is present", evidence: cache };
+    async run(ctx: Context & { $: cheerio.CheerioAPI }) {
+      const staticAsset = ctx.$("link[rel='stylesheet'][href], script[src]").first().attr("href") || ctx.$("script[src]").first().attr("src");
+      if (!staticAsset) return { status: "info", message: "No static assets found to test cache" };
+      
+      try {
+        let assetUrl = staticAsset;
+        if (!assetUrl.startsWith("http")) assetUrl = new URL(assetUrl, ctx.finalUrl).href;
+        
+        if (new URL(assetUrl).hostname !== new URL(ctx.finalUrl).hostname) {
+          return { status: "info", message: "First asset is third-party, skipping cache test" };
+        }
+
+        const res = await fetch(assetUrl, { method: "HEAD", signal: AbortSignal.timeout(3000) });
+        const cache = res.headers.get("cache-control") || "";
+        
+        if (cache.includes("immutable") || cache.includes("max-age=")) {
+           const match = cache.match(/max-age=(\d+)/);
+           const maxAge = match ? parseInt(match[1], 10) : 0;
+           if (cache.includes("immutable") || maxAge >= 86400) {
+             return { status: "pass", message: "Cache-Control is optimal", evidence: cache };
+           }
+        }
+        return { status: "warn", message: "Cache-Control is missing or too short", fix: "Add a Cache-Control header with max-age >= 86400 or immutable for static assets." };
+      } catch (e) {
+        return { status: "info", message: "Failed to fetch asset for cache test" };
       }
-      return { status: "warn", message: "Missing or overly restrictive Cache-Control", fix: "Add a Cache-Control header to allow browser caching of static assets." };
     }
   },
   {
@@ -99,7 +119,7 @@ export const perfChecks: Check[] = [
       let blocking = 0;
       scripts.each((_, script) => {
         const el = ctx.$(script);
-        if (el.attr("defer") === undefined && el.attr("async") === undefined) {
+        if (el.attr("defer") === undefined && el.attr("async") === undefined && el.attr("type") !== "module") {
           blocking++;
         }
       });

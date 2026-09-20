@@ -28,6 +28,14 @@ export async function fetchContext(targetUrl: string): Promise<Context & { $: ch
 
     const html = await response.text();
     const totalTime = performance.now() - start;
+    
+    const $ = cheerio.load(html);
+    
+    // SPA detection heuristic: clone body, remove scripts/styles, and check remaining text length
+    const bodyClone = $("body").clone();
+    bodyClone.find("script, style, noscript").remove();
+    const textLength = bodyClone.text().trim().length;
+    const isSPA = textLength < 50 && $("script").length > 0;
 
     return {
       url: normalizedUrl,
@@ -35,13 +43,16 @@ export async function fetchContext(targetUrl: string): Promise<Context & { $: ch
       status: response.status,
       headers: response.headers,
       html,
-      $: cheerio.load(html),
+      $,
       timing: {
         ttfb: Math.round(ttfb),
         total: Math.round(totalTime),
       },
+      isSPA
     };
   } catch (err: any) {
-    throw new Error(`Failed to fetch ${normalizedUrl}: ${err.message}`);
+    const fetchErr = new Error(`Failed to fetch ${normalizedUrl}: ${err.message}`);
+    fetchErr.cause = err;
+    throw fetchErr;
   }
 }

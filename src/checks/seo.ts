@@ -2,6 +2,27 @@ import { Check, Context, CheckResult } from "../types.js";
 
 export const seoChecks: Check[] = [
   {
+    id: "seo.noindex",
+    title: "Page is indexable",
+    category: "seo",
+    weight: 5,
+    effort: "low",
+    why: "If your page has a noindex tag or header, search engines will completely ignore it, ensuring it never appears in search results.",
+    run: async (ctx: Context & { $: cheerio.CheerioAPI }): Promise<CheckResult> => {
+      const robotsMeta = ctx.$('meta[name="robots"]').attr("content") || "";
+      const xRobotsTag = ctx.headers.get("x-robots-tag") || "";
+      
+      if (robotsMeta.toLowerCase().includes("noindex") || xRobotsTag.toLowerCase().includes("noindex")) {
+        return {
+          status: "fail",
+          message: "Page is blocked from indexing (noindex)",
+          fix: "Remove the 'noindex' directive from your meta tags or HTTP headers to allow search engines to index this page."
+        };
+      }
+      return { status: "pass", message: "Page is indexable" };
+    },
+  },
+  {
     id: "seo.status",
     title: "Page returns 200 (OK)",
     category: "seo",
@@ -146,7 +167,7 @@ export const seoChecks: Check[] = [
       const images = ctx.$("img");
       let missing = 0;
       images.each((_, img) => {
-        if (!ctx.$(img).attr("alt")) missing++;
+        if (ctx.$(img).attr("alt") === undefined) missing++;
       });
       if (missing > 0) {
         return {
@@ -187,9 +208,14 @@ export const seoChecks: Check[] = [
     run: async (ctx: Context): Promise<CheckResult> => {
       try {
         const url = new URL("/robots.txt", ctx.finalUrl).href;
-        const res = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(3000) });
+        const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
         if (res.ok) {
-          return { status: "pass", message: "robots.txt is present" };
+          const text = await res.text();
+          // Extremely basic check for blanket disallow
+          if (text.includes("Disallow: /") && !text.includes("Allow: /")) {
+            return { status: "fail", message: "robots.txt blocks all crawling (Disallow: /)", fix: "Update your robots.txt to allow search engines to crawl your site." };
+          }
+          return { status: "pass", message: "robots.txt is present and doesn't block all crawling" };
         }
         return { status: "warn", message: "robots.txt is missing", fix: "Add a robots.txt file to the root of your domain to guide crawlers." };
       } catch (e) {
