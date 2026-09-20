@@ -30,12 +30,12 @@ npx shipgrade https://your-website.com
 
 ## ✨ Features
 
-- **Blazing Fast**: Uses `cheerio` to parse HTML instantly. No heavy headless browsers (Puppeteer/Playwright) slowing down your workflow.
-- **35 Core Checks**: Exhaustively validates everything from Open Graph images and Twitter cards to Content-Security-Policy headers and Time-to-First-Byte (TTFB).
+- **Blazing Fast**: Uses `cheerio` to parse HTML instantly. Gracefully degrades for client-rendered SPAs (React/Vite).
+- **36 Core Checks**: Exhaustively validates everything from Open Graph images and Twitter cards to Content-Security-Policy headers and Time-to-First-Byte (TTFB).
 - **Local First**: Runs entirely on your machine. No cloud subscriptions, no tracking, no rate limits.
 - **AI Agent Ready**: Use the `--fix` flag to pipe actionable repair instructions straight into your favorite coding assistant (ChatGPT, Claude, etc).
 - **CI/CD Integration**: Supports `--fail-under <score>` and `--quiet` for seamless pipeline integration to block bad deployments.
-- **HTML & Image Export**: Use `--html` to generate a static dashboard, or `--card` to generate a sleek `.png` scorecard for sharing.
+- **Reporting & Export**: Use `--html` to generate a static dashboard, `--pdf` to generate a PDF report (zero dependencies), or `--card` to generate a sleek `.png` scorecard for sharing.
 
 ## 🛠️ Options
 
@@ -47,19 +47,22 @@ Options:
   --json                    Output the raw results as JSON
   --roast                   Include a playful (and savage) roast of your code
   --html <file>             Generate a static HTML report dashboard
+  --pdf <file>              Generate a comprehensive PDF report
   --card <file>             Generate a beautiful PNG score card
   --fix                     Generate a FIXES.md prompt for AI agents
+  --force                   Bypass Cloudflare/403 blocks and score anyway
   -f, --fail-under <score>  Exit with code 1 if the score is below the threshold
   -q, --quiet               Suppress visual output (banner, etc) for clean CI logs
   -h, --help                Display this message
   -v, --version             Display version number
 ```
 
-## 🔍 The 35 Checks Performed
+## 🔍 The 36 Checks Performed
 
 **shipgrade** evaluates your site across six distinct categories, concurrently executing network probes with a strict concurrency limit to avoid overwhelming your server.
 
 ### SEO (Search Engine Optimization)
+- Ensures your page is indexable (catches leaked `noindex` tags).
 - Validates Title and Meta Description lengths.
 - Ensures exactly one `<h1>` tag exists.
 - Checks for Canonical tags and `lang` attributes.
