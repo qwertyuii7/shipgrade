@@ -1,12 +1,10 @@
 {
   "name": "shipgrade",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Zero-config launch-readiness terminal report",
   "type": "module",
-  "main": "./dist/cli.js",
-  "bin": {
-    "shipgrade": "./dist/cli.js"
-  },
+  "main": "dist/cli.js",
+  "bin": "dist/cli.js",
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
