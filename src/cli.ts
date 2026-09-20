@@ -16,7 +16,7 @@ import { META } from "./meta.js";
 const cli = cac(META.bin);
 
 cli
-  .command("<url>", `Audit a website for ${META.name} readiness`)
+  .command("[url]", `Audit a website for ${META.name} readiness`)
   .option("--json", "Output as JSON")
   .option("--roast [intensity]", "Include a playful roast (savage)")
   .option("--fail-under <score>", "Fail if score is under threshold")
@@ -24,7 +24,12 @@ cli
   .option("--card <file>", "Generate PNG score card")
   .option("--fix", "Generate FIXES.md prompt for AI agents")
   .option("--quiet", "Suppress visual output (banner, etc)")
-  .action(async (url: string, options) => {
+  .action(async (url: string | undefined, options) => {
+    if (!url) {
+      cli.outputHelp();
+      process.exit(1);
+    }
+
     if (shouldShowBanner({ json: options.json, quiet: options.quiet })) {
       await playBanner({ version: META.version, url, checks: checks.length, categories: 6, roast: !!options.roast });
     }

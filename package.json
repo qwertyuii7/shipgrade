@@ -1,7 +1,7 @@
 {
   "name": "shipgrade",
-  "version": "0.1.0",
-  "description": "Zero config launch-readiness terminal report",
+  "version": "0.1.2",
+  "description": "Zero-config launch-readiness terminal report",
   "type": "module",
   "main": "./dist/cli.js",
   "bin": {
