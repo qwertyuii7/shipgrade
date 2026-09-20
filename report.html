@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>launchcheck Report - https://example.com</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; color: #333; }
+    h1 { border-bottom: 2px solid #eaeaea; padding-bottom: 10px; }
+    .score-card { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0; }
+    .score { font-size: 48px; font-weight: bold; margin: 10px 0; }
+    .score.good { color: #28a745; }
+    .score.warn { color: #ffc107; }
+    .score.bad { color: #dc3545; }
+    .roast { font-style: italic; color: #666; margin-top: 10px; }
+    .fix-list { list-style: none; padding: 0; }
+    .fix-item { background: #fff; border: 1px solid #eee; margin-bottom: 10px; padding: 15px; border-radius: 6px; }
+    .fix-id { font-size: 0.85em; color: #666; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <h1>🚀 launchcheck Report</h1>
+  <p><strong>Target:</strong> <a href="https://example.com/">https://example.com/</a></p>
+  
+  <div class="score-card">
+    <div class="score warn">
+      71 / 100 (Grade C)
+    </div>
+    <div class="roast">🔥 This is basically the duct tape and WD-40 of websites. Barely holding together.</div>
+  </div>
+
+  <h2>Top Fixes</h2>
+  <ul class="fix-list">
+    
+      <li class="fix-item">
+        <div class="fix-id">[seo.description]</div>
+        <strong>Missing meta description</strong>
+        <p>💡 <em>How to fix:</em> Add <meta name="description" content="...">.</p>
+      </li>
+    
+      <li class="fix-item">
+        <div class="fix-id">[social.og.image]</div>
+        <strong>Missing og:image</strong>
+        <p>💡 <em>How to fix:</em> Add an og:image for rich social sharing.</p>
+      </li>
+    
+      <li class="fix-item">
+        <div class="fix-id">[social.og.title]</div>
+        <strong>Missing og:title</strong>
+        <p>💡 <em>How to fix:</em> Add <meta property="og:title" content="...">.</p>
+      </li>
+    
+      <li class="fix-item">
+        <div class="fix-id">[seo.title]</div>
+        <strong>Title length is 14 characters (ideal: 30-60)</strong>
+        <p>💡 <em>How to fix:</em> Adjust title length for optimal display in search results.</p>
+      </li>
+    
+      <li class="fix-item">
+        <div class="fix-id">[sec.hsts]</div>
+        <strong>Missing HSTS header</strong>
+        <p>💡 <em>How to fix:</em> Add Strict-Transport-Security to headers.</p>
+      </li>
+    
+  </ul>
+</body>
+</html>
